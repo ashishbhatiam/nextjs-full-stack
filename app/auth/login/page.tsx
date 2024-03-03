@@ -1,25 +1,34 @@
 'use client'
 import axios from "@/utils/axios";
+import { signIn } from "next-auth/react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 const Login = () => {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  console.log('email: ', email);   
-  console.log('password: ', password);
+  const [email, setEmail] = useState('ab@gmail.com')
+  const [password, setPassword] = useState('secret')
+  const route = useRouter()
 
   const loginHandler = async () => {
       const data = {
         email,
         password
       }
-      try {
-        const response = await axios.post('/auth/login', data);
+
+      await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+        callbackUrl: "/",
+      }).then((response) => {
         console.log('response: ', response);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
+        if (response?.error) {
+          // setErrorMessage(response.error);-
+        } else if(response) {
+          route.push('/home')
+        }
+      });
 
   }
 
@@ -45,6 +54,7 @@ const Login = () => {
               type="email"
               id="username"
               onChange={(e) => setEmail(e.target.value)}
+              value={email}
               name="username"
               className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-black"
               autoComplete="off"
@@ -58,6 +68,7 @@ const Login = () => {
               type="password"
               id="password"
               name="password"
+              value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500 text-black"
               autoComplete="off"
